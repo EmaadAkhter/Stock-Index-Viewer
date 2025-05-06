@@ -42,7 +42,7 @@ Clone the project
 Go to the project directory
 
 ```bash
-  cd Peer-to-Peer-video-transfer
+  cd Stock-Index-Viewer
   cd code
 ```
 
