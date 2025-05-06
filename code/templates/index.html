@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Stock Index Viewer</title>
+  <style>
+    body {
+      display: flex;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 300px;
+      padding: 1em;
+      background-color: #2c2c2c;
+      border-right: 1px solid #444;
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+    }
+
+    select, label {
+      width: 100%;
+      font-size: 1em;
+      padding: 0.5em;
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+      border: 1px solid #555;
+      border-radius: 4px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1em;
+    }
+
+    #chart-title {
+      text-align: center;
+      margin-bottom: 1em;
+    }
+
+    #chart-image {
+      width: 100%;
+      max-height: 85vh;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background-color: #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Stock Index Viewer</h2>
+    <label>
+      Main Index:
+      <select id="main-dropdown" onchange="updateChart()">
+        <option value="">-- Select main index --</option>
+        {% for name in companies %}
+          <option value="{{ name.strip()|lower }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      Compare with:
+      <select id="comparer-dropdown" onchange="updateChart()">
+        <option value="">-- Select index to compare (optional) --</option>
+        {% for name in companies %}
+          <option value="{{ name.strip()|lower }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <div class="checkbox-group">
+      <label><input type="checkbox" id="rsi-toggle" checked onchange="updateChart()"> Show RSI</label>
+      <label><input type="checkbox" id="smi-toggle" checked onchange="updateChart()"> Show SMI</label>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <h3 id="chart-title">Please select an index</h3>
+    <img id="chart-image" src="" alt="Chart will appear here">
+  </div>
+
+  <script>
+    function updateChart() {
+      const mainIndex = document.getElementById('main-dropdown').value;
+      const compareIndex = document.getElementById('comparer-dropdown').value;
+      const showRSI = document.getElementById('rsi-toggle').checked;
+      const showSMI = document.getElementById('smi-toggle').checked;
+      const chartTitle = document.getElementById('chart-title');
+      const chartImage = document.getElementById('chart-image');
+
+      if (!mainIndex) {
+        chartTitle.textContent = 'Please select an index';
+        chartImage.src = '';
+        return;
+      }
+
+      const params = new URLSearchParams();
+      if (!showRSI) params.append('rsi', '0');
+      if (!showSMI) params.append('smi', '0');
+      params.append('t', Date.now());
+
+      if (compareIndex && compareIndex !== mainIndex) {
+        chartTitle.textContent = `Comparing ${mainIndex.toUpperCase()} vs ${compareIndex.toUpperCase()}`;
+        chartImage.src = `/compare/${encodeURIComponent(mainIndex)}/${encodeURIComponent(compareIndex)}?${params.toString()}`;
+      } else {
+        const mainText = document.getElementById('main-dropdown').options[document.getElementById('main-dropdown').selectedIndex].text;
+        chartTitle.textContent = mainText;
+        chartImage.src = `/plot/${encodeURIComponent(mainIndex)}?${params.toString()}`;
+      }
+    }
+  </script>
+</body>
+</html>
